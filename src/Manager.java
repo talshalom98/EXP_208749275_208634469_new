@@ -1,6 +1,7 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
@@ -19,6 +20,8 @@ public class Manager {
             numNodes = scanner.nextInt();
             maxDeg = scanner.nextInt();
 
+            scanner.nextLine(); // Consume the newline character after maxDeg
+
             for (int i = 0; i < numNodes; i++) {
                 int nodeId = i;
                 int[][] neighborsInfo = parseNeighborsInfo(scanner);
@@ -35,19 +38,19 @@ public class Manager {
 
     private int[][] parseNeighborsInfo(Scanner scanner) {
         String neighborsString = scanner.nextLine();
-        neighborsString = neighborsString.substring(2);
+        neighborsString = neighborsString.substring(1); // Remove the leading space
         String[] neighborsArray = neighborsString.split("\\], \\[");
 
         int numNeighbors = neighborsArray.length;
         int[][] neighbors = new int[numNeighbors][3];
 
         for (int i = 0; i < numNeighbors; i++) {
-            String neighborInfo = neighborsArray[i];
-            String[] neighborParts = neighborInfo.split(", ");
+            String neighborInfo = neighborsArray[i].replaceAll("[\\[\\]]", ""); // Remove square brackets
+            String[] neighborParts = neighborInfo.split(",");
 
-            int neighborId = Integer.parseInt(neighborParts[0]);
-            int writingPort = Integer.parseInt(neighborParts[1]);
-            int readingPort = Integer.parseInt(neighborParts[2]);
+            int neighborId = Integer.parseInt(neighborParts[0].trim());
+            int writingPort = Integer.parseInt(neighborParts[1].trim());
+            int readingPort = Integer.parseInt(neighborParts[2].trim());
 
             neighbors[i][0] = neighborId;
             neighbors[i][1] = writingPort;

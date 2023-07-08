@@ -1,7 +1,10 @@
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.ConnectException;
+import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.util.List;
 
 public class Node implements Runnable {
@@ -53,25 +56,33 @@ public class Node implements Runnable {
     }
 
     private void sendMessage(int neighborId, int writingPort, int id, int color) {
-        try (Socket socket = new Socket("localhost", writingPort);
-             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream())) {
-
+        try (Socket socket = new Socket()) {
+            socket.connect(new InetSocketAddress("localhost", writingPort), 5000); // Timeout of 5 seconds
+            ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
             out.writeInt(id);
             out.writeInt(color);
             out.flush();
-
+        } catch (ConnectException e) {
+            System.err.println("Connection refused. Make sure the server or node is running on the specified port.");
+        } catch (SocketTimeoutException e) {
+            System.err.println("Connection timeout. Check if there are any network issues or firewall restrictions.");
         } catch (IOException e) {
+            System.err.println("Error occurred while sending message:");
             e.printStackTrace();
         }
     }
 
     private int receiveMessage(int readingPort) {
-        try (Socket socket = new Socket("localhost", readingPort);
-             ObjectInputStream in = new ObjectInputStream(socket.getInputStream())) {
-
+        try (Socket socket = new Socket()) {
+            socket.connect(new InetSocketAddress("localhost", readingPort), 5000); // Timeout of 5 seconds
+            ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
             return in.readInt();
-
+        } catch (ConnectException e) {
+            System.err.println("Connection refused. Make sure the server or node is running on the specified port.");
+        } catch (SocketTimeoutException e) {
+            System.err.println("Connection timeout. Check if there are any network issues or firewall restrictions.");
         } catch (IOException e) {
+            System.err.println("Error occurred while receiving message:");
             e.printStackTrace();
         }
 
